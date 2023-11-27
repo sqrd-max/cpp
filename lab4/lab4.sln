@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lab4", "lab4\lab4.vcxproj", "{D8D1CBC5-5EC4-4643-94F3-176B99EFE624}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lab4_1", "lab4_1\lab4_1.vcxproj", "{D8D1CBC5-5EC4-4643-94F3-176B99EFE624}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lab4_2", "lab4_2\lab4_2.vcxproj", "{FEF6AC49-7D92-431C-BA3F-FDB13CF58DD0}"
 EndProject
