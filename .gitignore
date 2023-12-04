@@ -1,0 +1,9 @@
+
+*.o
+*.obj
+
+.idea/
+
+cache/
+
+*.exe
