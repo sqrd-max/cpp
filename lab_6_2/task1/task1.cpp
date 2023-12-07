@@ -2,6 +2,7 @@
 #include <vector>
 #include <functional>
 #include <unordered_map>
+#include <string_view>
 
 // Информация о событии
 struct EventInfo {
@@ -23,21 +24,35 @@ struct EventHandler {
 // Идентификатор события
 using EventHandle = size_t;
 
+struct NamedEvent
+{
+    std::string name;
+    std::vector<EventHandler> eventHandlers;
+};
+
 // Структура для хранения обработчиков событий
 struct EventSystem {
-    std::unordered_map<EventHandle, std::vector<EventHandler>> eventHandlers;
-    std::unordered_map<EventHandle, std::string> eventNames;
-    EventHandle nextEventId = 1;  // Идентификатор следующего события
+    std::vector<NamedEvent> events;
+    EventHandle nextEventId = 0;  // Идентификатор следующего события
 
     // Функция для создания нового события
-    EventHandle createEvent(const std::string& eventName) {
-        eventNames[nextEventId] = eventName;
+    EventHandle createEvent(std::string_view eventName) {
+        NamedEvent event = {std::string(eventName), {}};
+        events.push_back(std::move(event));
+        
         return nextEventId++;
     }
 
     // Функция для подписки обработчика на событие
     EventHandlerHandle subscribe(EventHandle eventId, EventHandlerFunc&& func) {
-        auto& handlers = eventHandlers[eventId];
+        // Проверка существования события с eventId
+        if (eventId >= events.size()) {
+            // Обработка ошибки, например, вывод сообщения об ошибке
+            std::cerr << "Error: Event with id " << eventId << " does not exist." << std::endl;
+            return 0; // или какое-то другое значение-метку ошибки
+        }
+
+        auto& handlers = events[eventId].eventHandlers;
         EventHandlerHandle handle = handlers.empty() ? 1 : (handlers.back().id + 1);
         handlers.push_back({ handle, std::move(func) });
         return handle;
@@ -45,7 +60,14 @@ struct EventSystem {
 
     // Функция для отписки обработчика от события
     bool unsubscribe(EventHandle eventId, EventHandlerHandle handle) {
-        auto& handlers = eventHandlers[eventId];
+        // Проверка существования события с eventId
+        if (eventId >= events.size()) {
+            // Обработка ошибки, например, вывод сообщения об ошибке
+            std::cerr << "Error: Event with id " << eventId << " does not exist." << std::endl;
+            return false;
+        }
+
+        auto& handlers = events[eventId].eventHandlers; 
         auto it = std::remove_if(handlers.begin(), handlers.end(),
                                  [handle](const EventHandler& handler) {
                                      return handler.id == handle;
@@ -59,12 +81,20 @@ struct EventSystem {
 
     // Функция для диспетчеризации события
     void dispatch(EventHandle eventId, EventInfo* event) {
-        auto& handlers = eventHandlers[eventId];
+        // Проверка существования события с eventId
+        if (eventId >= events.size()) {
+            // Обработка ошибки, например, вывод сообщения об ошибке
+            std::cerr << "Error: Event with id " << eventId << " does not exist." << std::endl;
+            return;
+        }
+
+        auto& handlers = events[eventId].eventHandlers; 
         for (auto& handler : handlers) {
             handler.func(event);
         }
     }
 };
+
 
 int main() {
     EventSystem eventSystem;
