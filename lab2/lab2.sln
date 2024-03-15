@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lab2", "lab2\lab2.vcxproj", "{3F75992B-7F52-45DB-8E5F-E50F12CFD7EE}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lab2", "lab2\lab2.vcxproj", "{87F67895-0ED0-4B48-977B-84C9AE4F6EAF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -10,13 +10,13 @@ Global
 		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{3F75992B-7F52-45DB-8E5F-E50F12CFD7EE}.Debug|Win32.ActiveCfg = Debug|Win32
-		{3F75992B-7F52-45DB-8E5F-E50F12CFD7EE}.Debug|Win32.Build.0 = Debug|Win32
-		{3F75992B-7F52-45DB-8E5F-E50F12CFD7EE}.Debug|x64.ActiveCfg = Debug|x64
-		{3F75992B-7F52-45DB-8E5F-E50F12CFD7EE}.Debug|x64.Build.0 = Debug|x64
-		{3F75992B-7F52-45DB-8E5F-E50F12CFD7EE}.Release|Win32.ActiveCfg = Release|Win32
-		{3F75992B-7F52-45DB-8E5F-E50F12CFD7EE}.Release|Win32.Build.0 = Release|Win32
-		{3F75992B-7F52-45DB-8E5F-E50F12CFD7EE}.Release|x64.ActiveCfg = Release|x64
-		{3F75992B-7F52-45DB-8E5F-E50F12CFD7EE}.Release|x64.Build.0 = Release|x64
+		{87F67895-0ED0-4B48-977B-84C9AE4F6EAF}.Debug|Win32.ActiveCfg = Debug|Win32
+		{87F67895-0ED0-4B48-977B-84C9AE4F6EAF}.Debug|Win32.Build.0 = Debug|Win32
+		{87F67895-0ED0-4B48-977B-84C9AE4F6EAF}.Debug|x64.ActiveCfg = Debug|x64
+		{87F67895-0ED0-4B48-977B-84C9AE4F6EAF}.Debug|x64.Build.0 = Debug|x64
+		{87F67895-0ED0-4B48-977B-84C9AE4F6EAF}.Release|Win32.ActiveCfg = Release|Win32
+		{87F67895-0ED0-4B48-977B-84C9AE4F6EAF}.Release|Win32.Build.0 = Release|Win32
+		{87F67895-0ED0-4B48-977B-84C9AE4F6EAF}.Release|x64.ActiveCfg = Release|x64
+		{87F67895-0ED0-4B48-977B-84C9AE4F6EAF}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 EndGlobal
