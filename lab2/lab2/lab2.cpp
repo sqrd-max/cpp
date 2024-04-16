@@ -20,28 +20,22 @@ struct Person {
 };
 
 
-// Реализация шаблонной функции serializePerson для типа Person
+// Функция для сериализации объекта Person
 std::string serializePerson(const Person& person) {
     std::ostringstream oss;
-    oss << person.name.data() << ',' << person.age << ',';
+    // Проверяем, что в имени нет запятых
+    if (std::string(person.name.data()).find(',') != std::string::npos) {
+        throw std::invalid_argument("Name contains commas, which is not allowed.");
+    }
+    // Записываем имя, обеспечивая, что оно не превышает 49 символов
+    oss << std::string(person.name.data(), std::min(std::strlen(person.name.data()), size_t(49))) << ',' << person.age << ',';
 
     // Сериализация enum Gender
     switch (person.gender) {
-    case Gender::Male:
-        oss << 'M';
-        break;
-    case Gender::Female:
-        oss << 'F';
-        break;
-        // Добавьте обработку других значений enum при необходимости
+        case Gender::Male: oss << 'M'; break;
+        case Gender::Female: oss << 'F'; break;
     }
-
-    // Дополнительные поля, если они есть
-    // oss << ',' << person.additionalField;
-
-    // Завершаем строку
-    oss << '\n';
-
+    oss << '\n';  
     return oss.str();
 }
 
@@ -86,24 +80,25 @@ std::optional<Gender> deserializeGender(std::istream& is) {
 // Функция для десериализации всего объекта Person
 std::optional<Person> deserializePerson(std::istream& is) {
     Person person;
-    
-    auto nameResult = deserializeString(is);
-    if (!nameResult) {
-        return std::nullopt;  // Ошибка при десериализации строки
+    if (!is.get(person.name.data(), 50, ',')) return std::nullopt;  // Читаем имя
+    is.ignore();  // Пропускаем запятую
+
+    std::string valueStr;
+    if (!std::getline(is, valueStr, ',')) return std::nullopt;  // Читаем возраст
+    try {
+        person.age = std::stoi(valueStr);
+    } catch (const std::invalid_argument&) {
+        return std::nullopt;  // Не удалось преобразовать возраст в число
     }
-    std::copy(nameResult->begin(), nameResult->end(), person.name.begin());
-    
-    auto ageResult = deserializeInt(is);
-    if (!ageResult) {
-        return std::nullopt;  // Ошибка при десериализации целочисленного значения
+
+    char genderChar;
+    if (!is.get(genderChar)) return std::nullopt;  // Читаем пол
+    is.ignore();  // Пропускаем запятую
+    switch (genderChar) {
+        case 'M': person.gender = Gender::Male; break;
+        case 'F': person.gender = Gender::Female; break;
+        default: return std::nullopt;  // Недопустимое значение для Gender
     }
-    person.age = *ageResult;
-    
-    auto genderResult = deserializeGender(is);
-    if (!genderResult) {
-        return std::nullopt;  // Ошибка при десериализации enum Gender
-    }
-    person.gender = *genderResult;
 
     return person;
 }
