@@ -75,12 +75,23 @@ void remove(HashTable<T>& table, std::string_view key) {
     do {
         Bucket<T>& bucket = table.buckets[index];
         if (bucket.occupied && bucket.key == key) {
-            bucket.occupied = false;
+            size_t shiftIndex = index;
+            while (true) {
+                size_t nextIndex = (shiftIndex + 1) % table.buckets.size();
+                if (!table.buckets[nextIndex].occupied || nextIndex == startIndex) {
+                    break;
+                }
+                table.buckets[shiftIndex] = table.buckets[nextIndex];
+                shiftIndex = nextIndex;
+            }
+            table.buckets[shiftIndex].occupied = false;  
             return;
         }
-        index = (index + 1) % table.buckets.size(); // Linear probing
+        index = (index + 1) % table.buckets.size(); 
     } while (index != startIndex);
+
 }
+
 
 template <typename T>
 void freeHashTable(HashTable<T>& table) {
