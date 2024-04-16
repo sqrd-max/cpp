@@ -4,10 +4,12 @@
 #include <algorithm>
 #include <numeric>
 #include <random>
+#include <span> 
+#include <functional>
 
 // Линейный поиск
 template <typename T>
-int linearSearch(const std::vector<T>& arr, const T& target) {
+int linearSearch(const std::span<T>& arr, const T& target) {
     for (int i = 0; i < arr.size(); ++i) {
         if (arr[i] == target) {
             return i; // Найдено значение, возвращаем его индекс
@@ -17,7 +19,7 @@ int linearSearch(const std::vector<T>& arr, const T& target) {
 }
 
 // Бинарный поиск
-int binarySearch(const std::vector<int>& arr, int target) {
+int binarySearch(const std::span<int>& arr, int target) {
     int left = 0;
     int right = arr.size() - 1;
     while (left <= right) {
@@ -35,7 +37,7 @@ int binarySearch(const std::vector<int>& arr, int target) {
 }
 
 // Интерполяционный поиск
-int interpolationSearch(const std::vector<int>& arr, int target) {
+int interpolationSearch(const std::span<int>& arr, int target) {
     int left = 0;
     int right = arr.size() - 1;
     while (left <= right && target >= arr[left] && target <= arr[right]) {
@@ -62,13 +64,40 @@ std::vector<int> generateRandomVector(int size) {
     return vec;
 }
 
+// Полиморфная функция для замера времени выполнения алгоритма поиска
+template <typename SearchFunction>
+void measureSearchTime(const std::vector<int>& sizes, int numTests, SearchFunction searchFunction, std::vector<double>& times) {
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    gen.seed(std::random_device{}()); 
+
+    for (int i = 0; i < sizes.size(); ++i) {
+        std::vector<int> sortedArray(sizes[i]);
+        std::iota(sortedArray.begin(), sortedArray.end(), 1); 
+        std::span<int> spanArray(sortedArray);
+        double totalTime = 0;
+
+        for (int test = 0; test < numTests; ++test) {
+            int target = std::uniform_int_distribution<>(1, sizes[i])(gen);
+            auto start = std::chrono::high_resolution_clock::now();
+            searchFunction(spanArray, target); 
+            auto end = std::chrono::high_resolution_clock::now();
+            totalTime += std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+        }
+
+        times[i] = totalTime / numTests; 
+    }
+}
+
+
+
 int main() {
     const int numTests = 5;
     const int minSize = 1000;
     const int maxSize = 10000;
     const int step = 1000;
-
     std::vector<int> sizes;
+
     for (int size = minSize; size <= maxSize; size += step) {
         sizes.push_back(size);
     }
@@ -77,34 +106,20 @@ int main() {
     std::vector<double> binarySearchTimes(sizes.size(), 0);
     std::vector<double> interpolationSearchTimes(sizes.size(), 0);
 
-    for (int i = 0; i < numTests; ++i) {
-        for (int j = 0; j < sizes.size(); ++j) {
-            std::vector<int> sortedArray(sizes[j]);
-            std::iota(sortedArray.begin(), sortedArray.end(), 1);
+    // Замеры времени для линейного поиска
+    measureSearchTime(sizes, numTests, linearSearch<int>, linearSearchTimes);
 
-            int target = rand() % sizes[j] + 1; // Случайный целевой элемент
+    // Замеры времени для бинарного поиска
+    measureSearchTime(sizes, numTests, binarySearch, binarySearchTimes);
 
-            auto start = std::chrono::high_resolution_clock::now();
-            int result = linearSearch(sortedArray, target);
-            auto end = std::chrono::high_resolution_clock::now();
-            linearSearchTimes[j] += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+    // Замеры времени для интерполяционного поиска
+    measureSearchTime(sizes, numTests, interpolationSearch, interpolationSearchTimes);
 
-            start = std::chrono::high_resolution_clock::now();
-            result = binarySearch(sortedArray, target);
-            end = std::chrono::high_resolution_clock::now();
-            binarySearchTimes[j] += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
-
-            start = std::chrono::high_resolution_clock::now();
-            result = interpolationSearch(sortedArray, target);
-            end = std::chrono::high_resolution_clock::now();
-            interpolationSearchTimes[j] += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
-        }
-    }
 
     // Вывод результатов
     std::cout << "Size\tLinear Search\tBinary Search\tInterpolation Search\n";
     for (int i = 0; i < sizes.size(); ++i) {
-        std::cout << sizes[i] << "\t" << linearSearchTimes[i] / numTests << "\t\t" << binarySearchTimes[i] / numTests << "\t\t" << interpolationSearchTimes[i] / numTests << "\n";
+        std::cout << sizes[i] << "\t" << linearSearchTimes[i] << "\t\t" << binarySearchTimes[i] << "\t\t" << interpolationSearchTimes[i] << "\n";
     }
 
     return 0;

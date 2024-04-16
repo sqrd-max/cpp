@@ -8,6 +8,7 @@
 #include <random>
 #include <string>
 #include <span>
+#include <cctype> // Для использования функции isprint
 
 // Enum для Gender
 enum class Gender { Male, Female };
@@ -23,22 +24,30 @@ struct Person {
 // Функция для сериализации объекта Person
 std::string serializePerson(const Person& person) {
     std::ostringstream oss;
-    // Проверяем, что в имени нет запятых
-    if (std::string(person.name.data()).find(',') != std::string::npos) {
-        throw std::invalid_argument("Name contains commas, which is not allowed.");
+
+    // Проверяем, что в имени нет запятых или других недопустимых символов
+    const char* namePtr = person.name.data();
+    for (size_t i = 0; i < person.name.size() && namePtr[i] != '\0'; ++i) {
+        if (!std::isprint(namePtr[i]) || namePtr[i] == ',' || namePtr[i] == ';' || namePtr[i] == '"') {
+            throw std::invalid_argument("Name contains invalid characters, which are not allowed.");
+        }
     }
+
     // Записываем имя, обеспечивая, что оно не превышает 49 символов
-    oss << std::string(person.name.data(), std::min(std::strlen(person.name.data()), size_t(49))) << ',' << person.age << ',';
+    size_t nameLength = std::strlen(namePtr);
+    nameLength = std::min(nameLength, size_t(49));
+    oss << std::string(namePtr, nameLength) << ',' << person.age << ',';
 
     // Сериализация enum Gender
-    switch (person.gender) {
-        case Gender::Male: oss << 'M'; break;
-        case Gender::Female: oss << 'F'; break;
+    if (person.gender == Gender::Male) {
+        oss << 'M';
+    } else if (person.gender == Gender::Female) {
+        oss << 'F';
     }
-    oss << '\n';  
+    oss << '\n';
+
     return oss.str();
 }
-
 
 
 // Функция для десериализации строки
@@ -63,19 +72,25 @@ std::optional<int> deserializeInt(std::istream& is) {
 
 // Функция для десериализации enum Gender
 std::optional<Gender> deserializeGender(std::istream& is) {
-    char genderChar;
-    is.get(genderChar);
-    is.ignore();  // Пропускаем запятую
+    char genderChar, nextChar;
+    if (!is.get(genderChar)) return std::nullopt;  // Читаем пол
+
+    // Проверяем следующий символ
+    if (!is.get(nextChar)) return std::nullopt;  // Читаем следующий символ
+    if (nextChar != ',') {
+        is.unget();  // Если это не запятая, возвращаем символ обратно в поток
+    }
+
     switch (genderChar) {
-        case 'M':
-            return Gender::Male;
-        case 'F':
-            return Gender::Female;
-        default:
-            // Недопустимое значение для Gender
-            return std::nullopt;
+    case 'M':
+        return Gender::Male;
+    case 'F':
+        return Gender::Female;
+    default:
+        return std::nullopt;  // Недопустимое значение для Gender
     }
 }
+
 
 // Функция для десериализации всего объекта Person
 std::optional<Person> deserializePerson(std::istream& is) {
