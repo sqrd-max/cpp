@@ -23,11 +23,11 @@ int sumOfNeighbors(GraphNode* node) {
 }
 
 void DFS(GraphNode* node, std::set<GraphNode*>& visited) {
-    visited.insert(node);
-    std::cout << "Visited (DFS): " << node->value << std::endl;
-    for (auto neighbor : node->neighbors) {
-        if (visited.find(neighbor) == visited.end()) {
-            DFS(neighbor, visited);
+    auto result = visited.emplace(node);
+    if (result.second) {
+        std::cout << "Visited (DFS): " << node->value << std::endl;
+        for (auto neighbor : node->neighbors) {
+                DFS(neighbor, visited);
         }
     }
 }
@@ -35,8 +35,8 @@ void DFS(GraphNode* node, std::set<GraphNode*>& visited) {
 void BFS(GraphNode* startNode) {
     std::queue<GraphNode*> queue;
     std::set<GraphNode*> visited;
-    visited.insert(startNode);
     queue.push(startNode);
+    visited.emplace(startNode);
 
     while (!queue.empty()) {
         GraphNode* node = queue.front();
@@ -44,8 +44,7 @@ void BFS(GraphNode* startNode) {
         std::cout << "Visited (BFS): " << node->value << std::endl;
 
         for (auto neighbor : node->neighbors) {
-            if (visited.find(neighbor) == visited.end()) {
-                visited.insert(neighbor);
+            if (visited.emplace(neighbor).second) {
                 queue.push(neighbor);
             }
         }
