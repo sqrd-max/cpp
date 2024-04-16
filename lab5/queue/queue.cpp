@@ -1,3 +1,4 @@
+#include <cassert>
 #include <iostream>
 #include <string>
 #include <optional>
@@ -35,34 +36,26 @@ public:
     }
 
     void enqueue(const Person& value) {
-        if (isFull()) {
-            throw std::runtime_error("Queue is full");
-        }
+        assert(!isFull());
         buffer[tail] = value;
         tail = nextIndex(tail);
         ++count;
     }
 
     void enqueue(Person&& value) {
-        if (isFull()) {
-            throw std::runtime_error("Queue is full");
-        }
+        assert(!isFull());
         buffer[tail] = std::move(value);
         tail = nextIndex(tail);
         ++count;
     }
 
-    std::optional<Person> front() {
-        if (!isEmpty()) {
-            return buffer[head];
-        }
-        return std::nullopt;
+    Person front() {
+        assert(!isEmpty()); 
+        return *buffer[head];
     }
 
     void dequeue() {
-        if (isEmpty()) {
-            throw std::runtime_error("Queue is empty");
-        }
+        assert(!isEmpty());
         buffer[head].reset();
         head = nextIndex(head);
         --count;
@@ -77,9 +70,7 @@ int main() {
 
     while (!queue.isEmpty()) {
         auto person = queue.front();
-        if (person) {
-            std::cout << "Front of queue: " << person->name << ", Age: " << person->age << std::endl;
-        }
+        std::cout << "Front of queue: " << person.name << ", Age: " << person.age << std::endl;
         queue.dequeue();
     }
 
