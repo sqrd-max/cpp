@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <optional>
+#include <vector>
 
 enum class Gender {Male, Female};
 
@@ -10,67 +11,72 @@ struct Person {
     Gender gender;
 };
 
-struct Node {
-    Person data;
-    Node* next = nullptr;
-};
-
 class Queue {
 private:
-    Node* head;
-    Node* tail;
+    std::vector<std::optional<Person>> buffer;
+    size_t head = 0;
+    size_t tail = 0;
+    size_t count = 0;
+    size_t capacity;
 
-public:
-    Queue() : head(nullptr), tail(nullptr) {}
-
-    ~Queue() {
-        while (head != nullptr) {
-            dequeue();
-        }
+    size_t nextIndex(size_t index) const {
+        return (index + 1) % capacity;
     }
 
+public:
+    explicit Queue(size_t cap = 10) : buffer(cap), capacity(cap) {}
+
     bool isEmpty() const {
-        return head == nullptr;
+        return count == 0;
+    }
+
+    bool isFull() const {
+        return count == capacity;
     }
 
     void enqueue(const Person& value) {
-        Node* newNode = new Node{value, nullptr};
-        if (tail != nullptr) {
-            tail->next = newNode;
+        if (isFull()) {
+            throw std::runtime_error("Queue is full");
         }
-        tail = newNode;
-        if (head == nullptr) {
-            head = newNode;
-        }
+        buffer[tail] = value;
+        tail = nextIndex(tail);
+        ++count;
     }
 
-    Person* front() {
-        if (!isEmpty()) {
-            return &head->data;
+    void enqueue(Person&& value) {
+        if (isFull()) {
+            throw std::runtime_error("Queue is full");
         }
-        return nullptr;
+        buffer[tail] = std::move(value);
+        tail = nextIndex(tail);
+        ++count;
+    }
+
+    std::optional<Person> front() {
+        if (!isEmpty()) {
+            return buffer[head];
+        }
+        return std::nullopt;
     }
 
     void dequeue() {
-        if (head != nullptr) {
-            Node* temp = head;
-            head = head->next;
-            if (head == nullptr) {
-                tail = nullptr;
-            }
-            delete temp;
+        if (isEmpty()) {
+            throw std::runtime_error("Queue is empty");
         }
+        buffer[head].reset();
+        head = nextIndex(head);
+        --count;
     }
 };
 
 int main() {
-    Queue queue;
+    Queue queue(5);
 
     queue.enqueue({"Alice", 30, Gender::Female});
-    queue.enqueue({"Bob", 25, Gender::Male});
+    queue.enqueue(Person{"Bob", 25, Gender::Male}); // Использование перемещения
 
     while (!queue.isEmpty()) {
-        Person* person = queue.front();
+        auto person = queue.front();
         if (person) {
             std::cout << "Front of queue: " << person->name << ", Age: " << person->age << std::endl;
         }

@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <cassert>
 
 enum class Gender {Male, Female};
 
@@ -13,33 +14,30 @@ struct Person {
 class Stack {
 private:
     std::vector<Person> elements;
-
+ 
 public:
     bool isEmpty() const {
         return elements.empty();
     }
 
-    void push(const Person& value) {
-        elements.push_back(value);
+    void push(Person&& value) {
+        elements.push_back(std::move(value)); // Используем std::move для перемещения
     }
 
     // Возвращает указатель на последний элемент или nullptr, если стек пустой
     Person* getLastElement() {
-        if (!isEmpty()) {
-            return &elements.back();
-        }
-        return nullptr;
+        assert(!isEmpty());
+        return &elements.back();
     }
 
     void pop() {
-        if (!isEmpty()) {
-            elements.pop_back();
-        }
+        assert(!isEmpty());
+        elements.pop_back();
     }
 };
 
 int main() {
-    Stack stack;
+    Stack stack{};
     
     stack.push({"Alice", 30, Gender::Female});
     stack.push({"Bob", 25, Gender::Male});
