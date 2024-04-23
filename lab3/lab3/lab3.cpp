@@ -8,16 +8,7 @@
 #include <random>
 #include <string>
 #include <span>
-#include <cstring> // Для работы с функцией snprintf
-
-// Определение Gender и Person 
-enum class Gender { Male, Female };
-
-struct Person {
-    std::array<char, 50> name;
-    int age;
-    Gender gender;
-};
+#include "Person.h"
 
 struct Node {
     Person data;

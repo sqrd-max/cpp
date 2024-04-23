@@ -1,14 +1,7 @@
 #include <iostream>
 #include <array>
 #include <optional>
-
-enum class Gender { Male, Female };
-
-struct Person {
-    std::array<char, 50> name;
-    int age;
-    Gender gender;
-};
+#include "Person.h"
 
 struct DNode {
     Person data;
@@ -114,7 +107,7 @@ void testDoublyLinkedList() {
     std::cout << "After removal, size of list: " << list.size << std::endl;
 }
 
-int main() {
-    testDoublyLinkedList();
-    return 0;
-}
+// int main() {
+//     testDoublyLinkedList();
+//     return 0;
+// }
