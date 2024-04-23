@@ -26,17 +26,13 @@ std::string serializePerson(const Person& person) {
     std::ostringstream oss;
 
     // Проверяем, что в имени нет запятых или других недопустимых символов
-    const char* namePtr = person.name.data();
-    for (size_t i = 0; i < person.name.size() && namePtr[i] != '\0'; ++i) {
-        if (!std::isprint(namePtr[i]) || namePtr[i] == ',' || namePtr[i] == ';' || namePtr[i] == '"') {
-            throw std::invalid_argument("Name contains invalid characters, which are not allowed.");
-        }
+    {
+        const char* namePtr = person.name.data();
+        size_t nameLength = std::strlen(namePtr);
+        nameLength = std::min(nameLength, size_t(49));
+        std::string_view nameView(namePtr, nameLength); 
+        oss << nameView << ',' << person.age << ',';
     }
-
-    // Записываем имя, обеспечивая, что оно не превышает 49 символов
-    size_t nameLength = std::strlen(namePtr);
-    nameLength = std::min(nameLength, size_t(49));
-    oss << std::string(namePtr, nameLength) << ',' << person.age << ',';
 
     // Сериализация enum Gender
     if (person.gender == Gender::Male) {
@@ -72,14 +68,15 @@ std::optional<int> deserializeInt(std::istream& is) {
 
 // Функция для десериализации enum Gender
 std::optional<Gender> deserializeGender(std::istream& is) {
-    char genderChar, nextChar;
-    if (!is.get(genderChar)) return std::nullopt;  // Читаем пол
+    char genderChar;
+    if (!is.get(genderChar)) return std::nullopt;  
 
-    // Проверяем следующий символ
-    if (!is.get(nextChar)) return std::nullopt;  // Читаем следующий символ
-    if (nextChar != ',') {
-        is.unget();  // Если это не запятая, возвращаем символ обратно в поток
+    char nextChar;
+    if (!is.get(nextChar) || nextChar != ',') {
+        return std::nullopt;  // Если следующий символ не запятая, возвращаем ошибку
     }
+
+    is.ignore();
 
     switch (genderChar) {
     case 'M':

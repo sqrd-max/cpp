@@ -4,6 +4,8 @@
 #include <chrono>
 #include <numeric>
 #include <random>
+#include <span> 
+#include <functional>
 
 struct Node {
     int data;
@@ -35,6 +37,20 @@ public:
         return node;
     }
 
+	bool search(int value) {
+        Node* node = root;
+        while (node != nullptr) {
+            if (value == node->data) {
+                return true;
+            } else if (value < node->data) {
+                node = node->left;
+            } else {
+                node = node->right;
+            }
+        }
+        return false;
+    }
+
     void inOrderTraversal(Node* node) {
         if (node != nullptr) {
             inOrderTraversal(node->left);
@@ -48,7 +64,7 @@ public:
     }
 
 private:
-    void destroyTree(Node* node) {
+    static void destroyTree(Node* node) {
         if (node) {
             destroyTree(node->left);
             destroyTree(node->right);
@@ -57,12 +73,28 @@ private:
     }
 };
 
-void testBST() {
-    std::vector<int> sizes = {10, 100, 1000, 10000};
+void searchAll(BST& tree, std::span<const int> data) {
+    for (int value : data) {
+        tree.search(value);
+    }
+}
+
+void insertAll(BST& tree, std::span<const int> data) {
+    for (int value : data) {
+        tree.insert(value);
+    }
+}
+
+void testBST(std::span<const int> sizes, int numTests,
+             std::function<void(BST&, std::span<const int>)> insertFunction,
+             std::function<void(BST&, std::span<const int>)> searchFunction) {
+    std::random_device rd;
+    std::mt19937 gen(rd());
+
     for (int size : sizes) {
-        std::cout << "Testing size: " << size << std::endl;
         std::vector<int> array(size);
         std::iota(array.begin(), array.end(), 1);  
+        std::shuffle(array.begin(), array.end(), gen);
 
         std::vector<std::vector<int>> testCases = {
             array,
@@ -70,27 +102,29 @@ void testBST() {
             array
         };
 
-        std::random_device rd;
-        std::mt19937 g(rd());
-
-        std::shuffle(testCases[2].begin(), testCases[2].end(), g);  
+        std::shuffle(testCases[2].begin(), testCases[2].end(), gen);  
 
         for (auto& testCase : testCases) {
-            BST tree;
-            auto start = std::chrono::high_resolution_clock::now();
-            for (int value : testCase) {
-                tree.insert(value);
+            std::span<const int> testCaseSpan(testCase);
+            std::vector<double> times;
+            for (int test = 0; test < numTests; ++test) {
+                BST tree;
+                auto start = std::chrono::high_resolution_clock::now();
+                insertFunction(tree, testCaseSpan);
+                searchFunction(tree, testCaseSpan);
+                auto end = std::chrono::high_resolution_clock::now();
+                times.push_back(std::chrono::duration<double, std::milli>(end - start).count());
             }
-            auto end = std::chrono::high_resolution_clock::now();
-            std::chrono::duration<double> elapsed = end - start;
-            std::cout << "Elapsed time: " << elapsed.count() << " seconds." << std::endl;
-            tree.inOrderTraversal(tree.root);
-            std::cout << std::endl << "-------------" << std::endl;
+            double avgTime = std::accumulate(times.begin(), times.end(), 0.0) / times.size();
+            std::cout << "Average time for size " << size << ": " << avgTime << " ms" << std::endl;
         }
     }
 }
 
 int main() {
-    testBST();
+    std::vector<int> sizes = {10, 100, 1000, 10000};
+    int numTests = 5;  // Number of tests to average
+    testBST(sizes, numTests, insertAll, searchAll);
     return 0;
 }
+

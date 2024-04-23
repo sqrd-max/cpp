@@ -9,7 +9,7 @@
 
 // Линейный поиск
 template <typename T>
-int linearSearch(const std::span<T>& arr, const T& target) {
+int linearSearch(std::span<T> arr, const T& target) {
     for (int i = 0; i < arr.size(); ++i) {
         if (arr[i] == target) {
             return i; // Найдено значение, возвращаем его индекс
@@ -66,17 +66,19 @@ std::vector<int> generateRandomVector(int size) {
 
 // Полиморфная функция для замера времени выполнения алгоритма поиска
 template <typename SearchFunction>
-void measureSearchTime(const std::vector<int>& sizes, int numTests, SearchFunction searchFunction, std::vector<double>& times) {
+void measureSearchTime(const std::span<const int> sizes, int numTests, SearchFunction searchFunction, std::vector<double>& times) {
     std::random_device rd;
     std::mt19937 gen(rd());
-    gen.seed(std::random_device{}()); 
 
     for (int i = 0; i < sizes.size(); ++i) {
-        std::vector<int> sortedArray(sizes[i]);
-        std::iota(sortedArray.begin(), sortedArray.end(), 1); 
-        std::span<int> spanArray(sortedArray);
+        std::vector<int> sortedArray;
+        sortedArray.reserve(sizes[i]); 
+        for (int num = 1; num <= sizes[i]; ++num) {
+            sortedArray.push_back(num); 
+        }
+        std::span<int> spanArray(sortedArray.data(), sortedArray.size());
+        
         double totalTime = 0;
-
         for (int test = 0; test < numTests; ++test) {
             int target = std::uniform_int_distribution<>(1, sizes[i])(gen);
             auto start = std::chrono::high_resolution_clock::now();
